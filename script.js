@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 const mario = document.querySelector('.mario')
 const pipe = document.querySelector('.pipe')
 
@@ -10,16 +9,21 @@ const currentScoreElement = document.getElementById('current-score')
 const highScoreElement = document.getElementById('high-score')
 const finalScoreValElement = document.getElementById('final-score-val')
 
-const audioStart = new Audio('./src/audio/audio_theme.mp3')
-const audioGameOver = new Audio('./src/audio/audio_gameover.mp3')
-
 // Variável para guardar o ID do intervalo e poder cancelar corretamente
 let loopInterval = null
 let scoreInterval = null
+let speedInterval = null
 
 // Pontuação
 let score = 0
 let highScore = localStorage.getItem('marioHighScore') || 0
+
+// Velocidade (duração da animação em segundos — menor = mais rápido)
+const BASE_SPEED = 2.0       // velocidade inicial
+const MIN_SPEED = 0.6        // velocidade máxima (limite)
+const SPEED_STEP = 0.05      // quanto diminui a cada tick
+const SPEED_TICK_MS = 3000   // a cada 3 segundos fica mais rápido
+let currentSpeed = BASE_SPEED
 
 // Atualiza o recorde inicial na tela
 highScoreElement.textContent = highScore
@@ -30,11 +34,13 @@ let running = false
 // Flag para evitar detectar colisão logo após o restart
 let ignoreCollision = false
 
-// Lista de obstáculos (caminhos de imagem e alturas correspondentes)
+// Lista de obstáculos com tamanhos variados
 const obstacles = [
-  { src: './img/pipe.png', width: '80px', bottom: '0px' },
-  { src: './img/pipe.png', width: '60px', bottom: '0px' }, // Cano menor
-  { src: './img/pipe.png', width: '100px', bottom: '0px' } // Cano maior
+  { src: './img/pipe.png', width: '80px', bottom: '0px' },   // Cano padrão
+  { src: './img/pipe.png', width: '60px', bottom: '0px' },   // Cano fino
+  { src: './img/pipe.png', width: '100px', bottom: '0px' },  // Cano largo
+  { src: './img/pipe.png', width: '70px', bottom: '0px' },   // Cano médio-fino
+  { src: './img/pipe.png', width: '90px', bottom: '0px' }    // Cano médio-largo
 ]
 
 // Função para mudar o obstáculo aleatoriamente
@@ -45,6 +51,20 @@ const randomizeObstacle = () => {
   pipe.src = chosen.src
   pipe.style.width = chosen.width
   pipe.style.bottom = chosen.bottom
+}
+
+// Aplica a velocidade atual na animação do pipe
+const applySpeed = () => {
+  pipe.style.animationDuration = `${currentSpeed}s`
+}
+
+// Aumenta a velocidade gradualmente
+const increaseSpeed = () => {
+  if (!running) return
+  if (currentSpeed > MIN_SPEED) {
+    currentSpeed = Math.max(currentSpeed - SPEED_STEP, MIN_SPEED)
+    applySpeed()
+  }
 }
 
 const updateScore = () => {
@@ -66,33 +86,37 @@ const startGame = () => {
   running = true
   ignoreCollision = false
   score = 0
+  currentSpeed = BASE_SPEED
   currentScoreElement.textContent = score
 
   pipe.classList.add('pipe-animation')
+  applySpeed()
   randomizeObstacle()
   start.style.display = 'none'
-
-  // audio
-  audioStart.currentTime = 0
-  audioStart.play().catch(() => { })
 
   // inicia o loop de colisão
   loopInterval = startLoop()
 
   // Inicia contagem de pontos (1 ponto a cada 100ms)
   scoreInterval = setInterval(updateScore, 100)
+
+  // Inicia aumento de velocidade gradual
+  speedInterval = setInterval(increaseSpeed, SPEED_TICK_MS)
 }
 
 const restartGame = () => {
-  // Para qualquer loop anterior
+  // Para qualquer loop/intervalo anterior
   if (loopInterval) clearInterval(loopInterval)
   if (scoreInterval) clearInterval(scoreInterval)
+  if (speedInterval) clearInterval(speedInterval)
 
   loopInterval = null
   scoreInterval = null
+  speedInterval = null
 
   gameOver.style.display = 'none'
   score = 0
+  currentSpeed = BASE_SPEED
   currentScoreElement.textContent = score
 
   // Marca para ignorar colisão por um curto tempo enquanto o pipe se reposiciona
@@ -101,6 +125,7 @@ const restartGame = () => {
   // Reset do pipe: remove estilo inline e reinicia animação
   pipe.style.left = ''
   pipe.style.right = ''
+  pipe.style.animationDuration = ''
   pipe.classList.remove('pipe-animation')
 
   // Reset do mario
@@ -113,17 +138,11 @@ const restartGame = () => {
   // Esconde botão iniciar
   start.style.display = 'none'
 
-  // Reset dos áudios
-  audioGameOver.pause()
-  audioGameOver.currentTime = 0
-
-  audioStart.currentTime = 0
-  audioStart.play().catch(() => { })
-
   // Aguarda o navegador processar a remoção da animação antes de adicioná-la de volta
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       pipe.classList.add('pipe-animation')
+      applySpeed()
       randomizeObstacle()
       running = true
 
@@ -135,6 +154,8 @@ const restartGame = () => {
       loopInterval = startLoop()
       // Inicia contagem de pontos
       scoreInterval = setInterval(updateScore, 100)
+      // Inicia aumento de velocidade
+      speedInterval = setInterval(increaseSpeed, SPEED_TICK_MS)
     })
   })
 }
@@ -179,8 +200,10 @@ const startLoop = () => {
       running = false
       clearInterval(loopInterval)
       clearInterval(scoreInterval)
+      clearInterval(speedInterval)
       loopInterval = null
       scoreInterval = null
+      speedInterval = null
 
       // Remove animações corretamente
       pipe.classList.remove('pipe-animation')
@@ -194,16 +217,6 @@ const startLoop = () => {
       mario.style.width = '80px'
       mario.style.marginLeft = '50px'
 
-      // Áudio
-      audioStart.pause()
-
-      audioGameOver.currentTime = 0
-      audioGameOver.play().catch(() => { })
-
-      setTimeout(() => {
-        audioGameOver.pause()
-      }, 7000)
-
       // Exibe pontuação final
       finalScoreValElement.textContent = score
 
@@ -212,9 +225,6 @@ const startLoop = () => {
     }
   }, 10)
 }
-
-// Inicia o loop de colisão
-loopInterval = startLoop()
 
 // Tecla espaço para pular
 document.addEventListener('keydown', e => {
@@ -242,108 +252,4 @@ document.addEventListener('touchstart', e => {
   if (e.touches.length) {
     jump()
   }
-=======
-const mario = document.querySelector('.mario')
-const pipe = document.querySelector('.pipe')
-
-const start = document.querySelector('.start')
-const gameOver = document.querySelector('.game-over')
-
-audioStart = new Audio('./src/audio/audio_theme.mp3')
-audioGameOver = new Audio('./src/audio/audio_gameover.mp3')
-
-
-const startGame = () => {
-  pipe.classList.add('pipe-animation')
-  start.style.display = 'none'
-
-  // audio
-  audioStart.play()
-}
-
-const restartGame = () => {
-  gameOver.style.display = 'none'
-  pipe.style.left = ''
-  pipe.style.right = '0'
-  mario.src = './src/img/mario.gif'
-  mario.style.width = '150px'
-  mario.style.bottom = '0'
-
-  start.style.display = 'none'
-
-  audioGameOver.pause()
-  audioGameOver.currentTime = 0;
-
-  audioStart.play()
-  audioStart.currentTime = 0;
-
-}
-
-const jump = () => {
-  mario.classList.add('jump')
-
-  setTimeout(() => {
-    mario.classList.remove('jump')
-  }, 800)
-}
-
-const loop = () => {
-  setInterval(() => {
-    const pipePosition = pipe.offsetLeft
-    const marioPosition = window
-      .getComputedStyle(mario)
-      .bottom.replace('px', ' ')
-
-    if (pipePosition <= 120 && pipePosition > 0 && marioPosition < 80) {
-      pipe.classList.remove('.pipe-animation')
-      pipe.style.left = `${pipePosition}px`
-
-      mario.classList.remove('.jump')
-      mario.style.bottom = `${marioPosition}px`
-
-      mario.src = './src/img/game-over.png'
-      mario.style.width = '80px'
-      mario.style.marginLeft = '50px'
-
-
-      function stopAudioStart() {
-        audioStart.pause()
-      }
-      stopAudioStart()
-
-      audioGameOver.play()
-
-      function stopAudio() {
-        audioGameOver.pause()
-      }
-      setTimeout(stopAudio, 7000)
-
-      gameOver.style.display = 'flex'
-
-      clearInterval(loop)
-    }
-  }, 10)
-}
-
-loop()
-
-document.addEventListener('keypress', e => {
-  const tecla = e.key
-  if (tecla === ' ') {
-    jump()
-  }
-})
-
-document.addEventListener('touchstart', e => {
-  if (e.touches.length) {
-    jump()
-  }
-})
-
-document.addEventListener('keypress', e => {
-  const tecla = e.key
-  if (tecla === 'Enter') {
-    startGame()
-  }
->>>>>>> 79d76b62878c9477bb426ee0d4f3c8520097eeea
 })
