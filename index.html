@@ -1,30 +1,59 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Jogo do Mario - desvie dos canos e tente sobreviver o maior tempo possível!">
-  <title>MARIO</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-   <div class="game">
-    <div class="score-container">
-      <div class="score">Pontos: <span id="current-score">0</span></div>
-      <div class="highscore">Recorde: <span id="high-score">0</span></div>
+<<<<<<< HEAD <!DOCTYPE html>
+  <html lang="pt-BR">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Jogo do Mario - desvie dos canos e tente sobreviver o maior tempo possível!">
+    <title>MARIO</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+
+  <body>
+    <div class="game">
+      <div class="score-container">
+        <div class="score">Pontos: <span id="current-score">0</span></div>
+        <div class="highscore">Recorde: <span id="high-score">0</span></div>
+      </div>
+      <img class="mario" src="./img/mario.gif" alt="mario">
+      <img class="pipe" src="./img/pipe.png" alt="cano">
+      <img class="clouds" src="./img/clouds.png" alt="nuvem">
+      <button class="start" id="btn-iniciar" onclick="startGame()">Iniciar</button>
     </div>
-    <img class="mario" src="./img/mario.gif" alt="mario">
-    <img class="pipe" src="./img/pipe.png" alt="cano">
-    <img class="clouds" src="./img/clouds.png" alt="nuvem">
-    <button class="start" id="btn-iniciar" onclick="startGame()">Iniciar</button>
-   </div>
 
     <div class="game-over">
       <h1>Game Over :(</h1>
       <div class="final-score">Pontuação Final: <span id="final-score-val">0</span></div>
       <button id="btn-reiniciar" onclick="restartGame()">Reiniciar</button>
     </div>
-</body>
-<script src="script.js"></script>
-</html>
+  </body>
+  <script src="script.js"></script>
+  =======
+  <!DOCTYPE html>
+  <html lang="pt-BR">
+
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="style.css">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MARIO</title>
+  </head>
+
+  <body>
+    <div class="game">
+      <img class="mario" src="img/mario.gif" alt="mario">
+      <img class="pipe" src="img/pipe.png" alt="cano">
+      <img class="clouds" src="img/clouds.png" alt="nuvem">
+      <button class="start" onclick="startGame()">Iniciar</button>
+    </div>
+
+    <div class="game-over">
+      <h1>Game Over :</h1><button onclick="restartGame()">Reiniciar</button>
+    </div>
+  </body>
+  <script src="script.js"></script>
+  >>>>>>> 79d76b62878c9477bb426ee0d4f3c8520097eeea
+
+  </html>
